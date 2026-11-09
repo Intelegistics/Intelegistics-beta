@@ -1,0 +1,40 @@
+Photo slots: each spot on the site loads the file named below from this folder.
+
+All photos are WebP, sized for the web (1400px wide for section photos, 1000px for the
+What We Handle cards). That keeps the whole site's photos under 2 MB, and the site
+preloads them in the background (assets/js/preload.js) so pages open with photos ready.
+
+Adding or replacing a photo:
+  1. Convert it to WebP at about 80% quality, no wider than the sizes above
+     (squoosh.app does this in the browser).
+  2. Save it here with the exact name below, ending in .webp, replacing the old file.
+  A .jpg/.jpeg/.png with the right name still works if no .webp of that name exists,
+  but it loads slower: delete the matching .webp first, or the old .webp keeps showing.
+
+Browsers keep photos cached for up to an hour before checking for a new version, so
+a replaced photo can take up to an hour to show for returning visitors (hard-refresh
+to see it immediately).
+
+Side-by-side section photos keep their own shape (no cropping). What We Handle cards
+are shown at 4:3 and cropped to fill.
+
+home-who-we-work-with  |  Home  |  aspect 5/4  |  Team sorting returned devices on a processing line
+home-hands-on  |  Home  |  aspect 5/4  |  Operator inspecting and grading a smartphone at a test bench
+returns-assessment  |  Reverse Logistics & Returns  |  aspect 4/3  |  Operations lead reviewing a returns workflow on the floor
+returns-program-design  |  Reverse Logistics & Returns  |  aspect 4/3  |  Trade-in devices being sorted by condition
+returns-workflow  |  Reverse Logistics & Returns  |  aspect 4/3  |  Technician at an intake and triage station
+returns-partners-launch  |  Reverse Logistics & Returns  |  aspect 4/3  |  Pallets of returned electronics moving through a 3PL facility
+refurb-bench  |  Refurbishment & Lifecycle  |  aspect 4/3  |  Technicians refurbishing smartphones at a repair bench
+refurb-data-security  |  Refurbishment & Lifecycle  |  aspect 4/3  |  Secure data-wipe station with devices connected
+value-channels  |  Value-Add Services  |  aspect 4/3  |  Pallets of graded devices staged for wholesale buyers
+value-partners  |  Value-Add Services  |  aspect 4/3  |  Operations team meeting at a 3PL partner site
+assets-mobile-devices  |  What We Handle  |  aspect 4/3  |  Assorted smartphones and tablets
+assets-computers-it  |  What We Handle  |  aspect 4/3  |  Laptops, servers, and networking equipment
+assets-consumer-electronics  |  What We Handle  |  aspect 4/3  |  Speakers, wearables, and smart-home devices
+assets-greentech-energy  |  What We Handle  |  aspect 4/3  |  Solar panels and battery storage units
+assets-healthtech-medical  |  What We Handle  |  aspect 4/3  |  Diagnostic and healthcare technology equipment
+assets-industrial-commercial  |  What We Handle  |  aspect 4/3  |  Industrial machinery, tools, and automation parts
+assets-retail-excess  |  What We Handle  |  aspect 4/3  |  Pallets of retail returns and overstock
+assets-end-of-life  |  What We Handle  |  aspect 4/3  |  End-of-life equipment sorted for parts and recycling
+about-story  |  About  |  aspect 4/5  |  The Intelegistics team on a device-processing floor
+about-founder  |  About  |  aspect 4/5  |  Portrait of the Intelegistics founder and CEO

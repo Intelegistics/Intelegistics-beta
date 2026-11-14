@@ -1,132 +1,191 @@
-/* Phone-only device categories: slowly slide the row, never fade the cards. */
+/* Phone-only card slideshows: continuous 24px/second motion with explicit Pause/Play. */
 (function () {
-  document.querySelectorAll('[data-device-slideshow]').forEach((slideshow) => {
-    const track = slideshow.querySelector('.device-grid');
+  document.querySelectorAll('[data-device-slideshow], [data-card-slideshow]').forEach((slideshow, slideshowIndex) => {
+    const track = slideshow.querySelector('[data-slideshow-track], .device-grid');
     const cards = Array.from(track.children);
-    const controls = slideshow.querySelector('.device-controls');
-    const status = slideshow.querySelector('[data-device-status]');
-    const count = slideshow.querySelector('[data-device-count]');
-    const rotation = slideshow.querySelector('[data-device-rotation]');
-    const pauseIcon = rotation.querySelector('[data-device-pause]');
-    const playIcon = rotation.querySelector('[data-device-play]');
+    const controls = slideshow.querySelector('[data-slideshow-controls], .device-controls');
+    const status = slideshow.querySelector('[data-slideshow-status], [data-device-status]');
+    const count = slideshow.querySelector('[data-slideshow-count], [data-device-count]');
+    const rotation = slideshow.querySelector('[data-slideshow-rotation], [data-device-rotation]');
+    const pauseIcon = rotation.querySelector('[data-slideshow-pause], [data-device-pause]');
+    const playIcon = rotation.querySelector('[data-slideshow-play], [data-device-play]');
+    const label = slideshow.getAttribute('data-slideshow-label') || 'Device categories, alphabetically ordered';
+    const trackLabel = slideshow.getAttribute('data-slideshow-track-label') || 'Device categories. Use left and right arrow keys to browse.';
     const mobile = window.matchMedia('(max-width: 640px)');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const speed = 24;
+    const buffer = 2;
     let active = false;
     let inView = !('IntersectionObserver' in window);
-    let automatic = !reducedMotion.matches;
+    let wantsToPlay = !reducedMotion.matches;
     let index = 0;
-    let frame = null;
-    let timer;
-    let scrollTimer;
+    let stride = 0;
+    let start = 0;
+    let span = 0;
+    let width = 0;
+    let position = 0;
+    let autoFrame = null;
+    let manualFrame = null;
+    let settleTimer;
+    let settling = false;
+    let gesture = null;
     let clones = [];
-    let pointerActive = false;
+    let renderedPlaying;
 
-    const leftAt = (position) => track.children[position].getBoundingClientRect().left - track.children[0].getBoundingClientRect().left;
-    const realIndex = (position) => (position - 1 + cards.length) % cards.length;
-    const nearestPosition = () => Math.max(0, Math.min(cards.length + 1, Math.round(track.scrollLeft / (leftAt(1) || 1))));
-    const canPlay = () => active && inView && automatic && !document.hidden && !document.body.classList.contains('nav-open');
-
-    const stop = () => {
-      window.clearTimeout(timer);
-      window.clearTimeout(scrollTimer);
-      if (frame !== null) window.cancelAnimationFrame(frame);
-      frame = null;
+    const leftAt = (physicalIndex) => track.children[physicalIndex].getBoundingClientRect().left - track.children[0].getBoundingClientRect().left;
+    const measure = () => {
+      stride = leftAt(buffer + 1) - leftAt(buffer);
+      const centerInset = (track.clientWidth - cards[0].getBoundingClientRect().width) / 2;
+      start = leftAt(buffer) - centerInset;
+      span = leftAt(cards.length + buffer) - leftAt(buffer);
+      width = track.getBoundingClientRect().width;
     };
-
     const update = () => {
+      index = ((Math.round((position - start) / stride) % cards.length) + cards.length) % cards.length;
       const text = `${index + 1} / ${cards.length}`;
       if (count.textContent !== text) count.textContent = text;
-      status.setAttribute('aria-live', automatic ? 'off' : 'polite');
-      rotation.setAttribute('aria-label', automatic ? 'Pause automatic slideshow' : 'Resume automatic slideshow');
-      pauseIcon.hidden = !automatic;
-      playIcon.hidden = automatic;
+      if (renderedPlaying !== wantsToPlay) {
+        renderedPlaying = wantsToPlay;
+        status.setAttribute('aria-live', wantsToPlay ? 'off' : 'polite');
+        rotation.setAttribute('aria-label', wantsToPlay ? 'Pause automatic slideshow' : 'Play automatic slideshow');
+        rotation.setAttribute('title', wantsToPlay ? 'Pause' : 'Play');
+        // SVGElement.hidden is not a reflected HTML property; update real attributes.
+        if (wantsToPlay) { pauseIcon.removeAttribute('hidden'); playIcon.setAttribute('hidden', ''); }
+        else { pauseIcon.setAttribute('hidden', ''); playIcon.removeAttribute('hidden'); }
+      }
     };
-
-    const schedule = () => {
-      window.clearTimeout(timer);
-      if (canPlay()) timer = window.setTimeout(() => move(index + 2, 5000, true), 1400);
-    };
-
-    const move = (position, duration, autoMove = false) => {
-      stop();
-      if (!active) return;
+    const applyPosition = (next) => {
+      if (!span) return;
+      position = start + ((next - start) % span + span) % span;
       track.classList.add('is-moving');
-      const from = track.scrollLeft;
-      const to = leftAt(position);
-      const started = performance.now();
-      const finish = () => {
-        index = realIndex(position);
-        // Rebase a boundary clone onto its identical original before snapping resumes.
-        track.scrollLeft = leftAt(index + 1);
-        frame = null;
-        track.classList.remove('is-moving');
-        update();
-        schedule();
-      };
-      if (!duration || Math.abs(to - from) < 1) { finish(); return; }
-      const tick = (now) => {
-        if (!active) return;
-        if (autoMove && !canPlay()) {
-          move(nearestPosition(), 0);
-          return;
-        }
-        const progress = Math.min(1, (now - started) / duration);
-        const eased = autoMove ? progress : 1 - Math.pow(1 - progress, 3);
-        track.scrollLeft = from + (to - from) * eased;
-        if (progress < 1) frame = window.requestAnimationFrame(tick);
-        else finish();
-      };
-      frame = window.requestAnimationFrame(tick);
-    };
-
-    const pause = () => {
-      automatic = false;
-      if (!active) return;
-      stop();
-      // Freeze at the current horizontal position; no jump or fade on Pause.
+      track.scrollLeft = position;
       update();
     };
+    const stopAuto = () => {
+      if (autoFrame !== null) window.cancelAnimationFrame(autoFrame);
+      autoFrame = null;
+    };
+    const stopAll = () => {
+      stopAuto();
+      if (manualFrame !== null) window.cancelAnimationFrame(manualFrame);
+      manualFrame = null;
+      window.clearTimeout(settleTimer);
+    };
+    const canPlay = () => active && inView && wantsToPlay && !document.hidden &&
+      !document.body.classList.contains('nav-open') && !settling && manualFrame === null &&
+      (!gesture || gesture.axis === 'vertical');
 
+    const syncPlayback = () => {
+      if (!active) return;
+      update();
+      if (!canPlay()) { stopAuto(); return; }
+      if (autoFrame !== null) return;
+      // Each resume starts a new clock; time spent offscreen never causes a leap.
+      let previous = performance.now();
+      position = track.scrollLeft;
+      track.classList.add('is-moving');
+      const tick = (now) => {
+        if (!canPlay()) { autoFrame = null; return; }
+        const seconds = Math.min(Math.max(now - previous, 0), 100) / 1000;
+        previous = now;
+        // Keep fractional progress instead of rereading possibly rounded scrollLeft.
+        applyPosition(position + speed * seconds);
+        autoFrame = window.requestAnimationFrame(tick);
+      };
+      autoFrame = window.requestAnimationFrame(tick);
+    };
+
+    const moveTo = (target, from = track.scrollLeft) => {
+      stopAll();
+      settling = false;
+      if (!active) return;
+      track.classList.add('is-moving');
+      const started = performance.now();
+      const duration = reducedMotion.matches ? 0 : 650;
+      const finish = () => { manualFrame = null; applyPosition(target); syncPlayback(); };
+      if (!duration || Math.abs(target - from) < 1) { finish(); return; }
+      const tick = (now) => {
+        const progress = Math.min(1, (now - started) / duration);
+        position = from + (target - from) * (1 - Math.pow(1 - progress, 3));
+        track.scrollLeft = position;
+        update();
+        if (progress < 1) manualFrame = window.requestAnimationFrame(tick);
+        else finish();
+      };
+      manualFrame = window.requestAnimationFrame(tick);
+    };
     const navigate = (direction) => {
       if (!active) return;
-      pause();
-      const position = nearestPosition();
-      index = realIndex(position);
-      // Normalize a frozen boundary clone before moving in either direction.
-      if (position === 0 || position === cards.length + 1) {
-        const fractionalOffset = track.scrollLeft - leftAt(position);
-        track.classList.add('is-moving');
-        track.scrollLeft = leftAt(index + 1) + fractionalOffset;
-      }
-      move(index + 1 + direction, reducedMotion.matches ? 0 : 650);
+      stopAll();
+      applyPosition(track.scrollLeft);
+      let from = position;
+      let nearest = Math.round((from - start) / stride);
+      // Rebase before easing across the seam so both neighboring cards exist.
+      if (nearest === cards.length) { from -= span; nearest -= cards.length; }
+      moveTo(start + (nearest + direction) * stride, from);
+    };
+
+    const cloneCard = (card, cloneIndex) => {
+      const clone = card.cloneNode(true);
+      const ids = new Map();
+      const elements = [clone, ...clone.querySelectorAll('*')];
+      // Keep SVG paint servers and other internal references local to each clone.
+      elements.forEach((element) => {
+        if (!element.id) return;
+        const original = element.id;
+        const unique = `device-clone-${slideshowIndex}-${cloneIndex}-${original}`;
+        ids.set(original, unique);
+        element.id = unique;
+      });
+      elements.forEach((element) => {
+        Array.from(element.attributes).forEach((attribute) => {
+          let value = attribute.value.replace(/url\(\s*(['"]?)#([^'"\)\s]+)\1\s*\)/g,
+            (reference, quote, id) => ids.has(id) ? `url(#${ids.get(id)})` : reference);
+          if (attribute.name === 'href' || attribute.name === 'xlink:href') {
+            if (value.startsWith('#') && ids.has(value.slice(1))) value = `#${ids.get(value.slice(1))}`;
+          } else if (/^(aria-labelledby|aria-describedby|aria-controls|aria-owns|aria-activedescendant|headers|for)$/.test(attribute.name)) {
+            value = value.split(/\s+/).map((id) => ids.get(id) || id).join(' ');
+          }
+          if (value !== attribute.value) element.setAttribute(attribute.name, value);
+        });
+        if (element.hasAttribute('autofocus')) element.removeAttribute('autofocus');
+      });
+      clone.setAttribute('aria-hidden', 'true');
+      clone.setAttribute('inert', '');
+      clone.inert = true;
+      clone.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex], [contenteditable]')
+        .forEach((element) => element.setAttribute('tabindex', '-1'));
+      return clone;
     };
 
     const configure = () => {
-      if (mobile.matches === active) return;
-      stop();
+      if (active === mobile.matches) return;
+      stopAll();
+      gesture = null;
+      settling = false;
       active = mobile.matches;
       controls.hidden = !active;
       slideshow.classList.toggle('is-enhanced', active);
       if (active) {
-        const before = cards[cards.length - 1].cloneNode(true);
-        const after = cards[0].cloneNode(true);
-        clones = [before, after];
-        clones.forEach((clone) => { clone.setAttribute('aria-hidden', 'true'); clone.inert = true; });
-        track.prepend(before);
-        track.append(after);
+        const before = cards.slice(-buffer).map((card, cloneIndex) => cloneCard(card, cloneIndex));
+        const after = cards.slice(0, buffer).map((card, cloneIndex) => cloneCard(card, cloneIndex + buffer));
+        clones = [...before, ...after];
+        track.prepend(...before);
+        track.append(...after);
         track.setAttribute('tabindex', '0');
-        track.setAttribute('aria-label', 'Device categories. Use left and right arrow keys to browse.');
+        track.setAttribute('aria-label', trackLabel);
         slideshow.setAttribute('role', 'group');
         slideshow.setAttribute('aria-roledescription', 'carousel');
-        slideshow.setAttribute('aria-label', 'Device categories, alphabetically ordered');
+        slideshow.setAttribute('aria-label', label);
         cards.forEach((card, cardIndex) => {
           card.setAttribute('role', 'group');
           card.setAttribute('aria-roledescription', 'slide');
           card.setAttribute('aria-label', `${cardIndex + 1} of ${cards.length}`);
         });
-        move(index + 1, 0);
+        measure();
+        applyPosition(start + stride * index);
+        syncPlayback();
       } else {
-        pointerActive = false;
         track.classList.remove('is-moving');
         clones.forEach((clone) => clone.remove());
         clones = [];
@@ -136,59 +195,99 @@
         cards.forEach((card) => ['role', 'aria-roledescription', 'aria-label'].forEach((name) => card.removeAttribute(name)));
       }
     };
+    const resize = () => {
+      if (!active || Math.abs(track.getBoundingClientRect().width - width) < .5) return;
+      const progress = (track.scrollLeft - start) / stride;
+      stopAll();
+      settling = false;
+      gesture = null;
+      measure();
+      applyPosition(start + progress * stride);
+      syncPlayback();
+    };
 
-    slideshow.querySelector('[data-device-prev]').addEventListener('click', () => navigate(-1));
-    slideshow.querySelector('[data-device-next]').addEventListener('click', () => navigate(1));
+    slideshow.querySelector('[data-slideshow-prev], [data-device-prev]').addEventListener('click', () => navigate(-1));
+    slideshow.querySelector('[data-slideshow-next], [data-device-next]').addEventListener('click', () => navigate(1));
     rotation.addEventListener('click', () => {
-      if (automatic) pause();
-      else { automatic = true; move(nearestPosition(), reducedMotion.matches ? 0 : 650); }
-    });
-    slideshow.addEventListener('focusin', (event) => {
-      if (event.target !== rotation && !rotation.contains(event.target)) pause();
+      if (!active) return;
+      stopAll();
+      wantsToPlay = !wantsToPlay;
+      settling = false;
+      applyPosition(track.scrollLeft);
+      syncPlayback();
     });
     slideshow.addEventListener('keydown', (event) => {
       if (!active || event.altKey || event.ctrlKey || event.metaKey) return;
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
-      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') navigate(event.key === 'ArrowLeft' ? -1 : 1);
-      else { pause(); move(event.key === 'Home' ? 1 : cards.length, reducedMotion.matches ? 0 : 650); }
+      if (event.key === 'Home' || event.key === 'End') moveTo(start + stride * (event.key === 'Home' ? 0 : cards.length - 1));
+      else navigate(event.key === 'ArrowLeft' ? -1 : 1);
     });
-    track.addEventListener('pointerdown', () => { pointerActive = true; pause(); track.classList.remove('is-moving'); });
-    track.addEventListener('wheel', () => { pause(); track.classList.remove('is-moving'); }, { passive: true });
-    const synchronizeScroll = () => {
+
+    const settleNativeScroll = () => {
       if (!active || track.classList.contains('is-moving')) return;
-      window.clearTimeout(scrollTimer);
-      scrollTimer = window.setTimeout(() => { if (active && !pointerActive) move(nearestPosition(), 0); }, 180);
+      settling = true;
+      stopAuto();
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(() => {
+        if (!active || (gesture && gesture.axis !== 'vertical')) return;
+        settling = false;
+        applyPosition(track.scrollLeft);
+        syncPlayback();
+      }, 180);
     };
-    track.addEventListener('scroll', synchronizeScroll, { passive: true });
+    track.addEventListener('pointerdown', (event) => {
+      if (!active) return;
+      stopAll();
+      settling = false;
+      gesture = { x: event.clientX, y: event.clientY, axis: 'pending' };
+      track.classList.add('is-moving');
+    }, { passive: true });
+    track.addEventListener('pointermove', (event) => {
+      if (!gesture || gesture.axis !== 'pending') return;
+      const dx = Math.abs(event.clientX - gesture.x);
+      const dy = Math.abs(event.clientY - gesture.y);
+      if (Math.max(dx, dy) < 8) return;
+      gesture.axis = dx > dy ? 'horizontal' : 'vertical';
+      if (gesture.axis === 'horizontal') track.classList.remove('is-moving');
+      else syncPlayback();
+    }, { passive: true });
     ['pointerup', 'pointercancel'].forEach((name) => window.addEventListener(name, () => {
-      if (!pointerActive) return;
-      pointerActive = false;
-      synchronizeScroll();
-    }));
+      if (!gesture) return;
+      const horizontal = gesture.axis === 'horizontal';
+      gesture = null;
+      if (horizontal) settleNativeScroll();
+      else syncPlayback();
+    }, { passive: true }));
+    track.addEventListener('wheel', (event) => {
+      if (!active || (!event.shiftKey && Math.abs(event.deltaX) <= Math.abs(event.deltaY))) return;
+      stopAll();
+      track.classList.remove('is-moving');
+      settleNativeScroll();
+    }, { passive: true });
+    track.addEventListener('scroll', settleNativeScroll, { passive: true });
     document.addEventListener('visibilitychange', () => {
       if (!active) return;
-      if (document.hidden) move(nearestPosition(), 0);
-      else schedule();
+      stopAll();
+      settling = false;
+      gesture = null;
+      syncPlayback();
     });
     if ('IntersectionObserver' in window) {
-      new IntersectionObserver((entries) => {
-        inView = entries[0].isIntersecting && entries[0].intersectionRatio >= .35;
-        if (active && !inView) move(nearestPosition(), 0);
-        else schedule();
-      }, { threshold: .35 }).observe(slideshow);
+      new IntersectionObserver((entries) => { inView = entries[0].isIntersecting; syncPlayback(); }, { threshold: 0 }).observe(slideshow);
+    }
+    if ('MutationObserver' in window) {
+      new MutationObserver(syncPlayback).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     }
     mobile.addEventListener('change', configure);
-    reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) pause(); });
-    if ('MutationObserver' in window) {
-      new MutationObserver(() => {
-        if (!active) return;
-        if (document.body.classList.contains('nav-open')) move(nearestPosition(), 0);
-        else schedule();
-      }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    }
+    reducedMotion.addEventListener('change', () => {
+      if (!reducedMotion.matches) return;
+      wantsToPlay = false;
+      stopAll();
+      syncPlayback();
+    });
     configure();
-    if ('ResizeObserver' in window) new ResizeObserver(() => { if (active) move(index + 1, 0); }).observe(track);
-    else window.addEventListener('resize', () => { if (active) move(index + 1, 0); });
+    if ('ResizeObserver' in window) new ResizeObserver(resize).observe(track);
+    else window.addEventListener('resize', resize);
   });
 })();

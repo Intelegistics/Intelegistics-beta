@@ -156,21 +156,101 @@
   </div>
 </section>
 
-<section class="section section--alt">
+<section class="section section--alt inventory-section" id="inventory-streams" aria-labelledby="inventory-streams-title">
   <div class="texture-grid"></div>
   <div class="container">
     <div class="section-head center reveal">
   <span class="eyebrow">Inventory streams</span>
-  <h2>Where inventory enters the <span class="text-red">recovery process</span></h2>
+  <h2 id="inventory-streams-title">Where inventory enters the <span class="text-red">recovery process</span></h2>
   <p class="lead">Returned, surplus, and retired assets require different handling strategies. We design and execute programs that move inventory efficiently from receipt through final disposition.</p>
 </div>
-    <div class="services-grid reveal-stagger">
-      <div class="card"><div class="icon-tile"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></div><h3>Customer &amp; Retail Returns</h3><p>Receive, inspect, grade, and route returned products to the highest-value practical outcome.</p></div>
-      <div class="card"><div class="icon-tile"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></div><h3>Trade-In &amp; Buyback</h3><p>Manage product intake, verification, processing, and recovery across structured acquisition programs.</p></div>
-      <div class="card"><div class="icon-tile"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></div><h3>Excess &amp; Surplus Inventory</h3><p>Convert overstock, discontinued merchandise, and underutilized assets into working capital.</p></div>
-      <div class="card"><div class="icon-tile"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><h3>Refurbishment &amp; Redeployment</h3><p>Restore serviceable assets, extend useful life, and return products to productive use.</p></div>
-      <div class="card"><div class="icon-tile"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 19H4.82a1.83 1.83 0 0 1-1.57-.88 1.79 1.79 0 0 1 0-1.78L7.2 9.5"/><path d="M11 19h8.2a1.83 1.83 0 0 0 1.56-.89 1.78 1.78 0 0 0 0-1.78l-1.23-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.29 13.6 7.2 9.5 3.1 10.6"/><path d="m9.34 5.81 1.1-1.89A1.83 1.83 0 0 1 11.99 3a1.78 1.78 0 0 1 1.55.89l3.94 6.84"/><path d="m13.38 9.63 4.1 1.1 1.1-4.1"/></svg></div><h3>End-of-Life &amp; Recycling</h3><p>Recover usable components and coordinate responsible downstream disposition when resale is no longer viable.</p></div>
-    </div>
+    <ol class="inventory-board reveal-stagger" role="list">
+      <li class="inventory-stream">
+        <span class="inventory-number" aria-hidden="true">01</span>
+        <h3 class="inventory-heading">Customer &amp; Retail Returns</h3>
+        <div class="inventory-visual" aria-hidden="true">
+          <svg class="inventory-art" viewBox="0 0 240 120" fill="none" focusable="false" aria-hidden="true">
+            <path class="inventory-art-guide" d="M12 100h216M16 20v80m52-80v80m52-80v80m52-80v80m52-80v80"/>
+            <path class="inventory-art-panel" d="m24 45 27-15 27 15v37L51 97 24 82Z"/>
+            <path class="inventory-art-wire" d="m24 45 27 15 27-15M51 60v37M38 37l27 15"/>
+            <path class="inventory-art-route" d="M81 63h23m49 0h25V38h34m-34 25v25h34"/>
+            <circle class="inventory-art-lens" cx="128" cy="59" r="24"/>
+            <path class="inventory-art-silver" d="m117 59 8 8 14-17"/>
+            <path class="inventory-art-accent" d="m145 77 16 16m45-61 6 6-6 6m0 38 6 6-6 6"/>
+            <circle class="inventory-art-point" cx="178" cy="63" r="4"/>
+          </svg>
+        </div>
+        <p class="inventory-description">Receive, inspect, grade, and route returned products to the highest-value practical outcome.</p>
+      </li>
+      <li class="inventory-stream">
+        <span class="inventory-number" aria-hidden="true">02</span>
+        <h3 class="inventory-heading">Trade-In &amp; Buyback</h3>
+        <div class="inventory-visual" aria-hidden="true">
+          <svg class="inventory-art" viewBox="0 0 240 120" fill="none" focusable="false" aria-hidden="true">
+            <path class="inventory-art-guide" d="M12 100h216M12 20h216"/>
+            <rect class="inventory-art-panel" x="26" y="25" width="43" height="72" rx="7"/>
+            <path class="inventory-art-wire" d="M39 34h17M41 87h13"/>
+            <rect class="inventory-art-module" x="171" y="25" width="43" height="72" rx="7"/>
+            <path class="inventory-art-silver" d="M184 34h17m-17 53h13m-17-27 9 9 16-18"/>
+            <path class="inventory-art-route" d="M79 43h78m-7-7 7 7-7 7M161 79H83m7-7-7 7 7 7"/>
+            <path class="inventory-art-wire" d="M104 58h32m-25 7h18"/>
+            <circle class="inventory-art-point" cx="79" cy="43" r="3"/><circle class="inventory-art-point" cx="161" cy="79" r="3"/>
+          </svg>
+        </div>
+        <p class="inventory-description">Manage product intake, verification, processing, and recovery across structured acquisition programs.</p>
+      </li>
+      <li class="inventory-stream">
+        <span class="inventory-number" aria-hidden="true">03</span>
+        <h3 class="inventory-heading">Excess &amp; Surplus Inventory</h3>
+        <div class="inventory-visual" aria-hidden="true">
+          <svg class="inventory-art" viewBox="0 0 240 120" fill="none" focusable="false" aria-hidden="true">
+            <path class="inventory-art-guide" d="M12 100h216M120 14v92"/>
+            <g class="inventory-art-panel"><rect x="23" y="25" width="35" height="31" rx="3"/><rect x="64" y="25" width="35" height="31" rx="3"/><rect x="23" y="61" width="35" height="31" rx="3"/><rect x="64" y="61" width="35" height="31" rx="3"/></g>
+            <path class="inventory-art-wire" d="M36 25v10h9V25m32 0v10h9V25M36 61v10h9V61m32 0v10h9V61M19 99h84"/>
+            <path class="inventory-art-route" d="M108 59h31m-8-8 8 8-8 8"/>
+            <path class="inventory-art-wire" d="M150 59h14V30h32m-32 29h32m-32 0v29h32"/>
+            <g class="inventory-art-module"><rect x="196" y="21" width="24" height="18" rx="3"/><rect x="196" y="50" width="24" height="18" rx="3"/><rect x="196" y="79" width="24" height="18" rx="3"/></g>
+            <path class="inventory-art-silver" d="m202 30 4 4 8-9m-12 34 4 4 8-9m-12 34 4 4 8-9"/>
+          </svg>
+        </div>
+        <p class="inventory-description">Convert overstock, discontinued merchandise, and underutilized assets into working capital.</p>
+      </li>
+      <li class="inventory-stream">
+        <span class="inventory-number" aria-hidden="true">04</span>
+        <h3 class="inventory-heading">Refurbishment &amp; Redeployment</h3>
+        <div class="inventory-visual" aria-hidden="true">
+          <svg class="inventory-art" viewBox="0 0 240 120" fill="none" focusable="false" aria-hidden="true">
+            <path class="inventory-art-guide" d="M12 100h216M12 20h216"/>
+            <rect class="inventory-art-panel" x="25" y="27" width="42" height="69" rx="6"/>
+            <path class="inventory-art-wire" d="M36 36h20M40 87h12"/>
+            <path class="inventory-art-accent" d="m49 44-9 15 12 3-9 14"/>
+            <path class="inventory-art-route" d="M79 60h21V39h41v21h19m-7-7 7 7-7 7"/>
+            <path class="inventory-art-wire" d="M88 82v8h61v-8m-28-31v21m-10-11h20"/>
+            <rect class="inventory-art-module" x="173" y="27" width="42" height="69" rx="6"/>
+            <path class="inventory-art-silver" d="M184 36h20m-15 51h12m-18-26 9 9 16-19"/>
+          </svg>
+        </div>
+        <p class="inventory-description">Restore serviceable assets, extend useful life, and return products to productive use.</p>
+      </li>
+      <li class="inventory-stream">
+        <span class="inventory-number" aria-hidden="true">05</span>
+        <h3 class="inventory-heading">End-of-Life &amp; Recycling</h3>
+        <div class="inventory-visual" aria-hidden="true">
+          <svg class="inventory-art" viewBox="0 0 240 120" fill="none" focusable="false" aria-hidden="true">
+            <path class="inventory-art-guide" d="M12 100h216M12 20h216"/>
+            <rect class="inventory-art-panel" x="23" y="33" width="62" height="44" rx="5"/>
+            <path class="inventory-art-wire" d="M30 40h48v29H30Zm15 37v10m18-10v10M34 87h40"/>
+            <path class="inventory-art-route" d="M94 55h26V32h42m-42 23v30h42m-6-59 6 6-6 6m0 41 6 6-6 6"/>
+            <rect class="inventory-art-module" x="174" y="20" width="40" height="26" rx="3"/>
+            <rect class="inventory-art-panel" x="182" y="70" width="24" height="26" rx="3"/>
+            <path class="inventory-art-silver" d="M185 27h17v12h-17Zm4 50h10v12h-10Z"/>
+            <path class="inventory-art-wire" d="M180 16v4m9-4v4m10-4v4m9-4v4m-28 26v4m9-4v4m10-4v4m9-4v4M178 76h4m-4 8h4m24-8h4m-4 8h4"/>
+            <circle class="inventory-art-point" cx="120" cy="55" r="4"/>
+          </svg>
+        </div>
+        <p class="inventory-description">Recover usable components and coordinate responsible downstream disposition when resale is no longer viable.</p>
+      </li>
+    </ol>
   </div>
 </section>
 
